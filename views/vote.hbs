@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>vote</title>
+    <style media="screen">
+      body {
+        font-size: 2em;
+      }
+      ul {
+        padding:0;
+        list-style: none;
+      }
+      button {
+        font-size: 1em;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <ul>
+      {{#each options}}
+        <li>
+          <button onclick="vote('{{id}}')">{{name}}</button>
+          <span id="value-{{id}}">0</span>
+        </li>
+      {{/each}}
+    </ul>
+
+    <script src="https://js.pusher.com/3.1/pusher.min.js"></script>
+    <script type="text/javascript">
+
+    var counts = {}
+
+    var pusher = new Pusher('{{key}}', {
+      cluster: '{{cluster}}',
+      encrypted: true
+    })
+
+    var channel = pusher.subscribe('presence-votes')
+
+    channel.bind('client-vote', function(data) {
+      incr(data.id)
+    })
+
+    function vote(id) {
+      channel.trigger("client-vote", {id: id})
+      incr(id)
+    }
+
+    function incr(id) {
+      var el = document.getElementById('value-' + id)
+      if(el) {
+        el.innerText = counts[id] = (counts[id] || 0) + 1
+      }
+    }
+
+
+    </script>
+  </body>
+</html>
